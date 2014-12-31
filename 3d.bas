@@ -2,8 +2,9 @@ CONST w = 1280 'start init
 halfw = w / 2
 CONST h = 720
 halfh = h / 2
+CONST tH = 63
+CONST tW = 63
 a$ = "map.pol"
-theme& = _SNDOPEN("theme.mp3")
 CLS
 IF NOT _FILEEXISTS(a$) THEN
   COLOR 12
@@ -43,16 +44,15 @@ player.x = 0
 player.y = 0
 player.z = 0
 SCREEN _NEWIMAGE(w, h, 32)
-OPEN "image.hfi" FOR INPUT AS 2
-INPUT #2, tW
-INPUT #2, tH
-DIM texture(tH, tW, 2) AS DOUBLE
-FOR x = 0 TO tW
-  FOR y = 0 TO tH
-    FOR e = 0 TO 2
-      INPUT #2, a#
-      texture(x, y, e) = a#
-NEXT e, y, x
+DIM texture(0 TO tH, 0 TO tW) AS LONG
+tex& = _LOADIMAGE("image.bmp")
+_SOURCE tex&
+FOR x = 0 TO tH: FOR y = 0 TO tW
+    texture(x, y) = POINT(x, y)
+    PSET (x, y), texture(x, y)
+NEXT y, x
+SLEEP
+_SOURCE 0
 DIM aperture AS DOUBLE
 aperture = 255
 _SOURCE 0
@@ -79,33 +79,26 @@ DO
     lineTop2 = halfh - h2 / 2
     lineBottom1 = halfh + h1 / 2
     lineBottom2 = halfh + h2 / 2
+    FOR stripeY = 0 TO tH
+      scaler1# = (lineBottom1 - lineTop1) / (tH + 1)
+      scaler2# = (lineBottom2 - lineTop2) / (tH + 1)
+      tex1T = lineTop1 + scaler1# * stripeY
+      tex2T = lineTop2 + scaler2# * stripeY
+      tex1B = lineTop1 + scaler1# * (stripeY + 1)
+      tex2B = lineTop2 + scaler2# * (stripeY + 1)
 
-    FOR x = x1 TO x2
-      dec# = 1 - ABS(x - x1) / ABS(x2 - x1)
-      lineTop = (lineTop1 * dec#) + (lineTop2 * (1 - dec#))
-      lineBottom = (lineBottom1 * dec#) + (lineBottom2 * (1 - dec#))
-      myZ = (z1 * dec#) + (z2 * (1 - dec#))
-      myX = (poly(i, 0) * dec#) + (poly(i, 2) * (1 - dec#))
-      texelX% = ((myZ + myX) * (tW + 1)) MOD (tW + 1)
-      scaler# = (lineBottom - lineTop) / (tH + 1)
-      FOR pixel% = 0 TO tH
-        top = lineTop + scaler# * pixel%
-        bottom = lineTop + scaler# * (pixel% + 1)
-        IF x < 0 OR x > w - 1 THEN GOTO nope
-        IF top < 0 THEN top = 0
-        IF bottom > h - 1 THEN bottom = h - 1
-        LINE (x, top)-(x, bottom), _RGB(texture(texelX%, pixel%, 0) * aperture, texture(texelX%, pixel%, 1) * aperture, texture(texelX%, pixel%, 2) * aperture)
-        nope:
-      NEXT
+      LINE (x1, tex1T)-(x2, tex2T), texture(i, stripeY)
+      LINE (x1, tex1B)-(x2, tex2B), texture(i, stripeY)
+      LINE (x1, tex1T)-(x1, tex1B), texture(i, stripeY)
+      LINE (x2, tex2T)-(x2, tex2B), texture(i, stripeY)
+
     NEXT
-    skippoly:
+
+    skippoly: 'for future stuff
   NEXT
   _DISPLAY
   _PRINTMODE _KEEPBACKGROUND
   time = 1 / (TIMER(.001) - bt#)
   _TITLE STR$(time)
-  IF LCASE$(INKEY$) = "w" THEN player.z = player.z + 0.05
-  IF LCASE$(INKEY$) = "s" THEN player.z = player.z - 0.05
-  player.z = player.z + 0.01
-  r = r + 0.001
 LOOP
+
