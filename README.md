@@ -4,6 +4,7 @@
 A basic polygonal 3D engine
 
 **Format**
+
 Header: 'TL;DR'
 
 (loop per poly)
