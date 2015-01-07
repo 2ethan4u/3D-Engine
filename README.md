@@ -7,7 +7,7 @@ A basic polygonal 3D engine
 Header: 'TL;DR'
 
 (loop per poly)
-
+```
 X1,  Z1
 
 X2,  Z2
@@ -15,7 +15,7 @@ X2,  Z2
 TOP, BOTTOM (0 to 1)
 
 TEXTURE
-
+```
 (end of loop)
 
 All entries must be seperated by a comma **or** new line.
